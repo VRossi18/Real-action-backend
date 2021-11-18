@@ -6,9 +6,10 @@ const {
   signInWithEmailAndPassword,
   updateEmail
 } = require("firebase/auth");
-const { doc, setDoc } = require("firebase/firestore");
+const { doc, setDoc, query, collection, orderBy, where, getDocs } = require("firebase/firestore");
 const { v4: uuidv4 } = require("uuid");
-const { User, userConverter } = require("./user")
+const { User, userConverter } = require("./user");
+const { Sale, salesConverter } = require("./sales");
 const SECRET = "realaction";
 
 const login = async (req, res) => {
@@ -52,13 +53,50 @@ const createUser = async (req, res) => {
       res.status(404).send({ success: false, msg: `${errorCode} - ${errorMessage}` });
     })
 }
-const updateUser = {
+
+const updateUser = async (req,res) => {
   
 }
+
+const createUserHistory = async (req, res) => {
+  try {
+    const { userId, productId } = req.body;
+    const id = uuidv4();
+    const userSale = doc(db, "history", id).withConverter(salesConverter);
+    await setDoc(userSale, new Sale(id, userId, productId, new Date().toLocaleString("pt-BR")));
+    res.status(200).send({ success: true, msg: "User history created" });
+  }
+  catch (ex) {
+    res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}` });
+  }
+}
+
+const getUserHistory = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const docs = [];
+    const q = query(collection(db, "history"), where("userId", "==", userId));
+    const results = await getDocs(q);
+    new Promise((resolve, reject) => {
+      results.forEach((value) => {
+        docs.push(value.data());
+      });
+    });
+    res.status(200).send({success: true, docs});
+  }
+  catch (ex) {
+    res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}` });
+  }
+}
+
+
 
 module.exports = {
   login,
   verifyJWT,
-  createUser
+  createUser,
+  createUserHistory,
+  updateEmail,
+  getUserHistory
 } 
   
