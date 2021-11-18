@@ -8,6 +8,7 @@ const routes = Router();
 
 //Products
 routes.get("/products/:page/:maxProducts", products.getProducts);
+routes.get("/products/category/:category/:maxResults", products.getProductsByCategory)
 routes.post("/products", login.verifyJWT, products.createProduct);
 routes.put("/products", login.verifyJWT, products.updateProduct);
 routes.delete("/products", login.verifyJWT, products.deleteProduct);

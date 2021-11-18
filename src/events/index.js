@@ -37,9 +37,11 @@ const getEvents = async (req, res) => {
 const createEvent = async (req, res) => {
   try {
     const { name, description, image, price, location, date } = req.body;
+
     const id = uuidv4();
     const ref = doc(db, "events", id).withConverter(eventsConverter);
     await setDoc(ref, new Events(id, name, image, description, price, location, date));
+
     return res.status(200).send({ success: true, msg: `Event created ${name}` });
   }
   catch (ex) {
@@ -50,12 +52,14 @@ const createEvent = async (req, res) => {
 const updateEvent = async (req, res) => {
   try {
     const { id, name, description, image, price, location, date } = req.body;
+
     const existEvent = await doc(db, "events", id);
     const docEvent = await getDoc(existEvent);
 
     if (docEvent.exists()) {
       const ref = doc(db, "events", id).withConverter(eventsConverter);
       await setDoc(ref, new Events(id, name, image, description, price, location, date));
+      
       return res.status(200).send({ success: true, msg: `Event updated ${name}` });
     }
     res.status(200).send({ success: true, msg: `Event non existent` });
