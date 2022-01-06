@@ -1,12 +1,14 @@
 const jwt = require("jsonwebtoken");
-const { auth, db } = require("../firebase");
+let { auth, db } = require("../firebase");
 const { 
   createUserWithEmailAndPassword,
   sendEmailVerification,
   signInWithEmailAndPassword,
-  updateEmail
+  updateEmail,
+  updatePassword,
+  getAuth,
 } = require("firebase/auth");
-const { doc, setDoc, query, collection, orderBy, where, getDocs } = require("firebase/firestore");
+const { doc, setDoc, query, collection, orderBy, where, getDocs, getDoc, limit } = require("firebase/firestore");
 const { v4: uuidv4 } = require("uuid");
 const { User, userConverter } = require("./user");
 const { Sale, salesConverter } = require("./sales");
@@ -14,6 +16,7 @@ const SECRET = "realaction";
 
 const login = async (req, res) => {
   const { email, password } = req.body;
+  auth = getAuth();
   signInWithEmailAndPassword(auth, email, password)
   .then(userCredential => {
     const token = jwt.sign({ user: email }, SECRET, { expiresIn: 7200 });
@@ -21,8 +24,8 @@ const login = async (req, res) => {
   })
   .catch(err => {
     const errorCode = err.code;
-      const errorMessage = err.message;
-      res.status(404).send({  success: false ,msg: `${errorCode} - ${errorMessage}` });
+    const errorMessage = err.message;
+    res.status(404).send({  success: false ,msg: `${errorCode} - ${errorMessage}` });
   })
 }
 
@@ -55,7 +58,32 @@ const createUser = async (req, res) => {
 }
 
 const updateUser = async (req,res) => {
-  
+  try {
+    const { id, email, name, address, cpf } = req.body;
+    const q = await query(collection(db, "users"), where("cpf", "==", cpf), limit(1));
+    const user = await getDocs(q);
+    let userSnapShot;
+    new Promise((resolve, reject) => {
+      user.forEach(value => {
+        userSnapShot = value.data();
+      })
+    })
+
+    if (userSnapShot.cpf !== undefined) {
+      await auth.onAuthStateChanged(async (user) => {
+        if (email === user.email) {
+           await updateEmail(user, email);
+        }
+        const ref = doc(db, "users", id).withConverter(userConverter);
+        await setDoc(ref, new User(id, name, cpf, address));
+        return res.status(200).send({ success: true, msg: "User updated"});
+     }
+    )};
+    return res.status(200).send({ success: true, msg: "User not found"});
+  }
+  catch (ex) {
+    res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}` });
+  }
 }
 
 const createUserHistory = async (req, res) => {
@@ -89,6 +117,15 @@ const getUserHistory = async (req, res) => {
   }
 }
 
+const updateUserPassword = async (req, res) => {
+  try {
+
+  }
+  catch (ex) {
+
+  }
+}
+
 
 
 module.exports = {
@@ -97,6 +134,7 @@ module.exports = {
   createUser,
   createUserHistory,
   updateEmail,
-  getUserHistory
+  getUserHistory,
+  updateUser
 } 
   

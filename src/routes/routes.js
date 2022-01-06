@@ -19,6 +19,7 @@ routes.post("/payment", login.verifyJWT, payment.makePayment);
 //Users
 routes.post("/login", login.login);
 routes.post("/createUser", login.createUser);
+routes.put("/user", login.updateUser);
 
 //Events
 routes.get("/events/:page/:maxresults", events.getEvents);

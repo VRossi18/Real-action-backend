@@ -7,7 +7,11 @@ const {
   where,
   setDoc,
   limit,
-  deleteDoc
+  deleteDoc,
+  startAt,
+  endAt,
+  orderBy,
+  startAfter
 } = require("firebase/firestore");
 const { productConverter, Product } = require("./products");
 const { v4: uuidv4 } = require("uuid");
@@ -32,7 +36,7 @@ const getProducts = async (req, res) => {
     const { page, maxProducts } = req.params;
 
     const docs = [];
-    const q = query(collection(db, "products"), limit(maxProducts));
+    const q = query(collection(db, "products"), limit(maxProducts), orderBy("quantity"),  startAt(page * maxProducts));
     const firestoreDocs = await getDocs(q);
 
     new Promise((resolve, reject) => {
@@ -75,14 +79,14 @@ const deleteProduct = async (req, res) => {
 
 const getProductsByCategory = async (req, res) => {
   try {
-    const { category, maxResults } = req.body;
+    const { category, maxResults } = req.params;
     const docs = [];
     
     const q = query(collection(db, "products"), where("category", "==", category), limit(maxResults));
-    const docs = await getDocs(q);
+    const docsFirebase = await getDocs(q);
     
     new Promise((resolve, reject) => {
-      docs.forEach(value => {
+      docsFirebase.forEach(value => {
         docs.push(value.data());
       });
     });
@@ -90,7 +94,7 @@ const getProductsByCategory = async (req, res) => {
     res.status(200).send({ success: true, docs });
   }
   catch (ex) {
-    res.status(500).send({ success: false, msg: `${ex.code} = ${ex.message}`})
+    res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}`})
   }
 }
 
