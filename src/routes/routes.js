@@ -23,7 +23,9 @@ routes.put("/user", login.updateUser);
 
 //Events
 routes.get("/events/:page/:maxresults", events.getEvents);
+routes.get("/eventValidation/:code", events.validateEvent);
 routes.post("/events", login.verifyJWT, events.createEvent);
+routes.post("/eventConfirmation", events.sellEvent);
 routes.put("/events", login.verifyJWT, events.updateEvent);
 routes.delete("/events", login.verifyJWT, events.deleteEvent);
 

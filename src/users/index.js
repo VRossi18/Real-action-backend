@@ -117,6 +117,10 @@ const getUserHistory = async (req, res) => {
   }
 }
 
+const forgetPassword = async (req, res) => {
+  
+}
+
 const updateUserPassword = async (req, res) => {
   try {
 

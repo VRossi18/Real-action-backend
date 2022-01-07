@@ -7,10 +7,13 @@ const {
   getDocs,
   deleteDoc,
   collection,
-  limit
+  limit,
+  where
 } = require("firebase/firestore");
 const { db } = require("../firebase");
 const { v4: uuidv4 } = require("uuid");
+const { Ticket, ticketConverter } = require("./tickets");
+const randomatic = require("randomatic");
 
 
 const getEvents = async (req, res) => {
@@ -86,9 +89,46 @@ const deleteEvent = async (req, res) => {
   }
 }
 
+const sellEvent = async (req, res) => {
+  try {
+    const { name, email, cpf, event } = req.body;
+    const code = await randomatic('A0A0', 6);
+
+    const id = uuidv4();
+    const ref = await doc(db, "tickets", id).withConverter(ticketConverter);
+    await setDoc(ref, new Ticket(id, name, email, cpf, event, code));
+
+    //send email
+    res.status(200).send({ success: true, msg: `Event confirmation send`, code });
+  }
+  catch (ex) {
+    res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}` });
+  }
+}
+
+const validateEvent = async (req, res) => {
+  try {
+    const { code } = req.params;
+    let validation = {};
+    const ticket = query(collection(db, "tickets"), where("code", "==", code));
+    const snapshot = await getDocs(ticket);
+
+    new Promise((resolve, reject) => {
+      snapshot.forEach(value => validation = value.data());
+    })
+
+    res.status(200).send({ success: true, validation })
+  }
+  catch (ex) {
+    res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}` });
+  }
+}
+
 module.exports = {
   getEvents,
   createEvent,
   updateEvent,
-  deleteEvent
+  deleteEvent,
+  sellEvent,
+  validateEvent
 }
