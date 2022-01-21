@@ -40,6 +40,7 @@ const verifyJWT = async (req, res, next) => {
 
 const createUser = async (req, res) => {
   const { email, password, name , address, cpf } = req.body;
+  auth = getAuth();
   createUserWithEmailAndPassword(auth, email, password)
     .then(userCredential => {
       sendEmailVerification(auth.currentUser)
