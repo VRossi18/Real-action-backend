@@ -89,7 +89,7 @@ const deleteEvent = async (req, res) => {
   }
 }
 
-const sellEvent = async (req, res) => {
+const createTicket = async (req, res) => {
   try {
     const { name, email, cpf, event } = req.body;
     const code = await randomatic('A0A0', 6);
@@ -106,7 +106,7 @@ const sellEvent = async (req, res) => {
   }
 }
 
-const validateEvent = async (req, res) => {
+const getTicket = async (req, res) => {
   try {
     const { code } = req.params;
     let validation = {};
@@ -124,11 +124,24 @@ const validateEvent = async (req, res) => {
   }
 }
 
+const validateTicket = async (req, res) => {
+  try {
+    const { id, name, email, cpf, event, code } = req.body;
+    const ref = ref(db, "tickets", id).withConverter(ticketConverter);
+    await setDoc(ref, new Ticket(id, name, email, cpf, event, code, true));
+    res.status(200).send({ success: true, msg: "Ticket validado"});
+  }
+  catch (ex) {
+    res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}` });
+  }
+}
+
 module.exports = {
   getEvents,
   createEvent,
   updateEvent,
   deleteEvent,
-  sellEvent,
-  validateEvent
+  createTicket,
+  getTicket,
+  validateTicket
 }

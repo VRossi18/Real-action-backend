@@ -1,6 +1,6 @@
 
 class Product {
-  constructor(id, name, description, price, quantity, size, brand, category, image) {
+  constructor(id, name, description, price, quantity, size, brand, category, banner, images) {
     this.id = id;
     this.name = name;
     this.description = description;
@@ -9,7 +9,8 @@ class Product {
     this.size = size;
     this.brand = brand;
     this.category = category;
-    this.image = image;
+    this.banner = banner;
+    this.images = images;
   }
 }
 
@@ -24,12 +25,13 @@ const productConverter = {
       size: product.size,
       brand: product.brand,
       category: product.category,
-      image: product.image
+      banner: product.banner,
+      image: product.images
     }
   },
   fromFirestore: (snapshot, options) => {
     const data = snapshot.data(options);
-    return new Product(data.id, data.name, data.description, data.price, data.quantity, data.size, data.brand, data.category, data.image);
+    return new Product(data.id, data.name, data.description, data.price, data.quantity, data.size, data.brand, data.category, data.banner, data.images);
   }
 }
 
