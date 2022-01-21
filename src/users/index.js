@@ -47,7 +47,7 @@ const createUser = async (req, res) => {
       .then(async () => {
         const userId = uuidv4();
         const user = doc(db, "users", userId).withConverter(userConverter);
-        await setDoc(user, new User(userId, name, cpf, address));
+        await setDoc(user, new User(userId, name, cpf, address, false));
         res.status(200).send({ success: true, msg: "Verification mail sent" });
       })
     })
