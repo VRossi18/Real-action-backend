@@ -70,7 +70,7 @@ const deleteProduct = async (req, res) => {
   try {
     const { product } = req.body;
 
-    const delDoc = doc(db, product.category, product.id);
+    const delDoc = doc(db, "products", product.id);
     await deleteDoc(delDoc);
 
     res.status(200).send({ success: true, msg: `Produto deletado` })
