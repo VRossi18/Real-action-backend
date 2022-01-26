@@ -119,24 +119,25 @@ const getProductById = async (req, res) => {
   }
 }
 
-const getCustomFilter = async (req, res) => {
-  try {
-    const { filters, maxResults } = req.params;
-    const docs = [];
+const getByName = async (req, res) => {
+    try {
+      const { search } = req.params;
+      const q = query(collection(db, "products"), where("name", ">=", search), where("name", "<=", search + "\uf8ff"));
+      const docs = [];
+      const snapShot = await getDocs(q);
+      new Promise((resolve, reject) => {
+        snapShot.forEach(values => {
+          docs.push(values.data());
+        });
+      });
 
-    const q = query(collection(db, "products"), where(filters[0], filters[1], filters[2]), limit(maxResults));
-    const results = await getDocs(q);
-
-    new Promise((resolve, resject) => {
-      results.forEach(value => docs.push(value.data()));
-    });
-
-    res.status(200).send({ success: true, docs });
-  }
-  catch(ex) {
-    res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}`});
-  }
+      res.status(200).send({ success: true, docs });
+    }
+    catch (ex) {
+      res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}`});
+    }
 }
+
 
 const inStoreSale = async (req, res) => {
     try {
@@ -160,5 +161,6 @@ module.exports = {
   deleteProduct,
   getProductsByCategory,
   getProductById,
-  inStoreSale
+  inStoreSale,
+  getByName
 };

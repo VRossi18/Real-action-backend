@@ -11,6 +11,7 @@ const routes = Router();
 routes.get("/products/:page/:maxProducts", products.getProducts);
 routes.get("/products/category/:category/:maxResults", products.getProductsByCategory);
 routes.get("/products/:id", products.getProductById);
+routes.get("/productsByName/:search", products.getByName);
 routes.post("/products", login.verifyJWT, products.createProduct);
 routes.post("/inStoreSale", products.inStoreSale);
 routes.put("/products", login.verifyJWT, products.updateProduct);
