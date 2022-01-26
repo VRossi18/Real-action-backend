@@ -12,6 +12,7 @@ routes.get("/products/:page/:maxProducts", products.getProducts);
 routes.get("/products/category/:category/:maxResults", products.getProductsByCategory);
 routes.get("/products/:id", products.getProductById);
 routes.post("/products", login.verifyJWT, products.createProduct);
+routes.post("/inStoreSale", products.inStoreSale);
 routes.put("/products", login.verifyJWT, products.updateProduct);
 routes.delete("/products", login.verifyJWT, products.deleteProduct);
 

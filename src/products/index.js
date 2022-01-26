@@ -16,6 +16,7 @@ const {
 } = require("firebase/firestore");
 const { productConverter, Product } = require("./products");
 const { v4: uuidv4 } = require("uuid");
+const { ProviderId } = require("firebase/auth");
 
 const createProduct = async (req, res) => {
   try {
@@ -56,7 +57,8 @@ const getProducts = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const { product } = req.body;
-    await createProduct(product);
+    const ref = doc(db, "products", product.id).withConverter(productConverter);
+    await setDoc(ref, new Product(product.id, product.name, product.description, product.price, product.quantity, product.size, product.brand, product.category, product.banner, product.images));
     res.status(200).send({ success: true, msg: `Produto ${product.name} editado com sucesso` });
   }
   catch (ex) {
@@ -132,8 +134,23 @@ const getCustomFilter = async (req, res) => {
     res.status(200).send({ success: true, docs });
   }
   catch(ex) {
-    res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}`})
+    res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}`});
   }
+}
+
+const inStoreSale = async (req, res) => {
+    try {
+      const { product, quantitySold } = req.body;
+      product.quantity -= quantitySold;
+
+      const ref = doc(db, "products", product.id).withConverter(productConverter);
+      await setDoc(ref, new Product(product.id, product.name, product.description, product.price, product.quantity, product.size, product.brand, product.category, product.banner, product.images));
+
+      res.status(200).send({ success: true, msg: "Product updated" });
+    }
+    catch (ex) {
+      res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}`});
+    }
 }
 
 module.exports = {
@@ -142,5 +159,6 @@ module.exports = {
   updateProduct,
   deleteProduct,
   getProductsByCategory,
-  getProductById
+  getProductById,
+  inStoreSale
 };
