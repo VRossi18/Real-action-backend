@@ -19,21 +19,39 @@ const randomatic = require("randomatic");
 const getEvents = async (req, res) => {
   try {
     const { page, maxResults } = req.params;
-    const docs = [];
 
-    const first = query(collection(db, "events"), limit(maxResults * page));
-    const snapshot = await getDocs(first);
+    const docs = [];
+    const q = query(collection(db, "events"), limit(maxResults), orderBy("date"),  startAt(page * maxResults));
+    const firestoreDocs = await getDocs(q);
 
     new Promise((resolve, reject) => {
-      snapshot.forEach((value) => {
+      firestoreDocs.forEach((value) => {
         docs.push(value.data());
       });
     });
 
-    res.status(200).send({ success: true, docs });
+    res.status(200).send({ success: true, docs});
   }
   catch (ex) {
-    res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}` });
+    res.status(500).send({ success: false, msg: `Erro: ${ex}` });
+  }
+}
+
+const getEventById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ref = doc(db, "events", id);
+    const event = await getDoc(ref);
+    
+    if (event.exists()) {
+      res.status(200).send({ success: true, event: event.data() });
+    }
+    else {
+      res.status(200).send({ success: true, event: "Evento não existente" });
+    }
+  }
+  catch (ex) {
+    res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}`})
   }
 }
 
@@ -74,18 +92,15 @@ const updateEvent = async (req, res) => {
 
 const deleteEvent = async (req, res) => {
   try {
-    const { id } = req.body;
-    const existent = await doc(db, "events", id);
-    const docEvent = await getDoc(existent);
-    
-    if (docEvent.exists()) {
-      await deleteDoc(docEvent);
-      res.status(200).send({ success: true, msg: `Event deleted` });
-    }
-    res.status(200).send({ success: true, msg: `Event non existent` });
+    const { event } = req.body;
+
+    const delDoc = doc(db, "events", event.id);
+    await deleteDoc(delDoc);
+
+    res.status(200).send({ success: true, msg: `Evento deletado` })
   }
   catch (ex) {
-    res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}` });
+    res.status(500).send({ success: false, msg: `Erro: ${ex}` });
   }
 }
 
@@ -143,5 +158,6 @@ module.exports = {
   deleteEvent,
   createTicket,
   getTicket,
-  validateTicket
+  validateTicket,
+  getEventById
 }

@@ -1,11 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 const routes = require("./routes/routes");
+const bodyParser = require('body-parser')
 const app = express();
 
 app.listen(3000);
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json({ limit: "100mb" }));
+
 app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy-Only',

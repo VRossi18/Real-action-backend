@@ -10,7 +10,6 @@ class Product {
     this.brand = brand;
     this.category = category;
     this.banner = banner;
-    this.images = images;
   }
 }
 
@@ -26,12 +25,11 @@ const productConverter = {
       brand: product.brand,
       category: product.category,
       banner: product.banner,
-      image: product.images
     }
   },
   fromFirestore: (snapshot, options) => {
     const data = snapshot.data(options);
-    return new Product(data.id, data.name, data.description, data.price, data.quantity, data.size, data.brand, data.category, data.banner, data.images);
+    return new Product(data.id, data.name, data.description, data.price, data.quantity, data.size, data.brand, data.category, data.banner);
   }
 }
 

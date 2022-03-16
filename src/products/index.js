@@ -18,7 +18,7 @@ const { productConverter, Product } = require("./products");
 const { v4: uuidv4 } = require("uuid");
 const { ProviderId } = require("firebase/auth");
 const { category, categoryConverter, Category } = require("./categories");
-const { getStorage, ref, uploadString } = require("firebase/storage");
+const { getStorage, ref, uploadString, getMetadata, getDownloadURL, listAll } = require("firebase/storage");
 
 const createProduct = async (req, res) => {
   try {
@@ -26,15 +26,16 @@ const createProduct = async (req, res) => {
     const storage = getStorage();
 
     const id = uuidv4();
-    const ref = doc(db, "products", id).withConverter(productConverter);
-    await setDoc(ref, new Product(id, product.name, product.description, product.price, product.quantity, product.size, product.brand, product.category, product.banner, product.images));
-
+    const productRef = doc(db, "products", id).withConverter(productConverter);
+    
     product.images.forEach((img, index) => {
       const storageRef = ref(storage, product.name + index);
       uploadString(storageRef, img, 'base64').then(snapshot => {
         console.log("uploaded image")
       })
     });
+    
+    await setDoc(productRef, new Product(id, product.name, product.description, product.price, product.quantity, product.size, product.brand, product.category, product.banner));
 
     return res.status(200).send({ success: true, msg: `Produto ${product.name} cadastrado com sucesso`});
   }
@@ -55,6 +56,11 @@ const getProducts = async (req, res) => {
       firestoreDocs.forEach((value) => {
         docs.push(value.data());
       });
+    });
+
+    const storage = getStorage();
+    docs.forEach((element) => {
+      getDownloadURL(ref(storage, element.name))
     });
 
     res.status(200).send({ success: true, docs});
