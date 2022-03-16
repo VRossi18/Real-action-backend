@@ -17,14 +17,24 @@ const {
 const { productConverter, Product } = require("./products");
 const { v4: uuidv4 } = require("uuid");
 const { ProviderId } = require("firebase/auth");
+const { category, categoryConverter, Category } = require("./categories");
+const { getStorage, ref, uploadString } = require("firebase/storage");
 
 const createProduct = async (req, res) => {
   try {
     const { product } = req.body;
+    const storage = getStorage();
 
     const id = uuidv4();
     const ref = doc(db, "products", id).withConverter(productConverter);
     await setDoc(ref, new Product(id, product.name, product.description, product.price, product.quantity, product.size, product.brand, product.category, product.banner, product.images));
+
+    product.images.forEach((img, index) => {
+      const storageRef = ref(storage, product.name + index);
+      uploadString(storageRef, img, 'base64').then(snapshot => {
+        console.log("uploaded image")
+      })
+    });
 
     return res.status(200).send({ success: true, msg: `Produto ${product.name} cadastrado com sucesso`});
   }
@@ -138,6 +148,27 @@ const getByName = async (req, res) => {
     }
 }
 
+const getCategories = async (req, res) => {
+
+}
+
+const createCategory = async (req, res) => {
+  try {
+    const { name } = req.body;
+    const id = uuidv4();
+    const ref = doc(db, "categories", id).withConverter(categoryConverter);
+    await setDoc(ref, new Category(id, name));
+
+    res.status(200).send({ success: true, msg: "Category created" });
+  }
+  catch (ex) {
+    res.status(500).send({ success: false, msg: `${ex.code} - ${ex.message}`});
+  }
+}
+
+const updateCategory = async (req, res) => {
+  
+}
 
 const inStoreSale = async (req, res) => {
     try {
